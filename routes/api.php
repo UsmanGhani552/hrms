@@ -12,11 +12,11 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::post('/login',[AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
 });
-Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
+
 Route::get('/fetch-users', [AttendanceController::class, 'fetchUsers']);
 
 Route::get('/test-zkteco', function () {
@@ -26,21 +26,20 @@ Route::get('/test-zkteco', function () {
 
     try {
         $zk = new ZKTeco($ip, $port);
-        
+
         echo "Connecting...\n";
         $connected = $zk->connect();
         echo "Connected: " . ($connected ? 'YES' : 'NO') . "\n";
-        
+
         if ($connected) {
             echo "Device Version: " . $zk->version() . "\n";
             echo "Device Time: " . $zk->getTime() . "\n";
-            
+
             $users = $zk->getUser();
             echo "Users Found: " . count($users) . "\n";
-            
+
             $zk->disconnect();
         }
-        
     } catch (Exception $e) {
         echo "Error: " . $e->getMessage() . "\n";
     }
@@ -59,7 +58,7 @@ Route::get('/socket-test-detail', function () {
     // Test 2: UDP Socket (different approach)
     $udpSocket = @fsockopen("udp://$ip", $port, $errno, $errstr, 5);
     $results['UDP Socket Create'] = $udpSocket ? '✅ SUCCESS' : "❌ FAILED: $errstr";
-    
+
     // Test 3: UDP Write (if socket created)
     if ($udpSocket) {
         $testData = "TEST";
@@ -71,11 +70,11 @@ Route::get('/socket-test-detail', function () {
     // Test 4: Low-level socket functions
     $sock = @socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
     $results['socket_create()'] = $sock ? '✅ SUCCESS' : '❌ FAILED: ' . socket_strerror(socket_last_error());
-    
+
     if ($sock) {
         $bind = @socket_bind($sock, '0.0.0.0', 0);
         $results['socket_bind()'] = $bind ? '✅ SUCCESS' : '❌ FAILED: ' . socket_strerror(socket_last_error());
-        
+
         if ($bind) {
             $send = @socket_sendto($sock, "TEST", 4, 0, $ip, $port);
             $results['socket_sendto()'] = $send ? "✅ SUCCESS: sent $send bytes" : '❌ FAILED: ' . socket_strerror(socket_last_error());
