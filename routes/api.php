@@ -45,3 +45,43 @@ Route::get('/test-zkteco', function () {
         echo "Error: " . $e->getMessage() . "\n";
     }
 });
+
+Route::get('/socket-test-detail', function () {
+    $results = [];
+    $ip = '154.57.213.84';
+    $port = 2370;
+
+    // Test 1: TCP Socket
+    $tcpSocket = @fsockopen($ip, $port, $errno, $errstr, 5);
+    $results['TCP Socket'] = $tcpSocket ? '✅ SUCCESS' : "❌ FAILED: $errstr";
+    if ($tcpSocket) fclose($tcpSocket);
+
+    // Test 2: UDP Socket (different approach)
+    $udpSocket = @fsockopen("udp://$ip", $port, $errno, $errstr, 5);
+    $results['UDP Socket Create'] = $udpSocket ? '✅ SUCCESS' : "❌ FAILED: $errstr";
+    
+    // Test 3: UDP Write (if socket created)
+    if ($udpSocket) {
+        $testData = "TEST";
+        $writeResult = fwrite($udpSocket, $testData);
+        $results['UDP Socket Write'] = $writeResult ? "✅ SUCCESS: wrote $writeResult bytes" : "❌ FAILED: Cannot write";
+        fclose($udpSocket);
+    }
+
+    // Test 4: Low-level socket functions
+    $sock = @socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    $results['socket_create()'] = $sock ? '✅ SUCCESS' : '❌ FAILED: ' . socket_strerror(socket_last_error());
+    
+    if ($sock) {
+        $bind = @socket_bind($sock, '0.0.0.0', 0);
+        $results['socket_bind()'] = $bind ? '✅ SUCCESS' : '❌ FAILED: ' . socket_strerror(socket_last_error());
+        
+        if ($bind) {
+            $send = @socket_sendto($sock, "TEST", 4, 0, $ip, $port);
+            $results['socket_sendto()'] = $send ? "✅ SUCCESS: sent $send bytes" : '❌ FAILED: ' . socket_strerror(socket_last_error());
+        }
+        socket_close($sock);
+    }
+
+    return $results;
+});
