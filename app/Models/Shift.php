@@ -6,5 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Shift extends Model
 {
-    //
+    protected $fillable = [
+        'name',
+        'check_in_from',
+        'check_in_to',
+    ];
 }
