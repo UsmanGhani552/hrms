@@ -30,10 +30,11 @@ class AttendenceSeeder extends Seeder
                     continue; // Skip if user not found
                 }
                 $punchTime = date('H:i:s', strtotime($attendence['timestamp']));
-                $checkInFrom = $user->shift->check_in_from; // "09:00:00"
-                $checkInTo = $user->shift->check_in_to;     // "11:00:00"
+                $checkInFrom = $user->shift->check_in_from; // "17:00:00"  // "08:00:00"
+                $checkInTo = $user->shift->check_in_to;     // "03:00:00"  // "17:00:00"
 
-                $type = ($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out';
+                $type = ($checkInFrom < $checkInTo)? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out'):
+                (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
                 $attendence = Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,

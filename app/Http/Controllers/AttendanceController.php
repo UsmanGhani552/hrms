@@ -22,10 +22,11 @@ class AttendanceController extends Controller
     {
         try {
             // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2002)->orderBy('id', 'desc')->get();
-            $attendences = Attendence::with('user:id,name,email')->get();
+            $attendences = Attendence::with('user:id,name,email,shift_id')->get();
             return response()->json([
                 'message' => 'Attendance logs fetched successfully',
                 'logs' => $attendences,
+                'shifts' => DB::table('shifts')->get(),
             ]);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Failed to fetch attendance logs: ' . $th->getMessage());

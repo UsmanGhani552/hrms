@@ -21,7 +21,7 @@ class ShiftSeeder extends Seeder
             [
                 'name' => 'Night Shift',
                 'check_in_from' => '17:00:00',
-                'check_in_to' => '08:00:00',
+                'check_in_to' => '03:00:00',
             ],
         ];
 
