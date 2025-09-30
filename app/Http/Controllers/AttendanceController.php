@@ -21,8 +21,8 @@ class AttendanceController extends Controller
     public function fetchAttendance()
     {
         try {
-            $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2002)->orderBy('id', 'desc')->get();
-            // $attendences = Attendence::with('user:id,name,email')->get();
+            // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2002)->orderBy('id', 'desc')->get();
+            $attendences = Attendence::with('user:id,name,email')->get();
             return response()->json([
                 'message' => 'Attendance logs fetched successfully',
                 'logs' => $attendences,
