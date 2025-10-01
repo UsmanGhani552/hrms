@@ -33,4 +33,15 @@ class AuthController extends Controller
             return ResponseTrait::error('The provided credentials do not match our records.');
         }
     }
+
+    public function logout()
+    {
+        try {
+            $user = Auth::user();
+            $user->tokens()->delete();
+            return ResponseTrait::success('User Logged Out Successfully');
+        } catch (Exception $e) {
+            return ResponseTrait::error('An error occurred due to: ' . $e->getMessage());
+        }
+    }
 }
