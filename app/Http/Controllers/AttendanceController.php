@@ -6,6 +6,7 @@ use App\Models\Attendence;
 use App\Services\ZKTecoService;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,6 +22,13 @@ class AttendanceController extends Controller
     public function fetchAttendance()
     {
         try {
+            $user = Auth::user();
+            $attendences = Attendence::with('user:id,name,email,shift_id');
+            if($user->hasRole('employee')){
+                $attendences = $attendences->where('user_id',$user->id)->get();
+            }else{
+                $attendences = $attendences->get();
+            }
             // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2002)->orderBy('id', 'desc')->get();
             $attendences = Attendence::with('user:id,name,email,shift_id')->get();
             return response()->json([
