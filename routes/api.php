@@ -15,9 +15,10 @@ Route::get('/user', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout']);
-
+     
     //atendence routes
     Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
+    Route::post('/attendence/update', [AttendanceController::class, 'update']);
 });
 
 Route::get('/fetch-users', [AttendanceController::class, 'fetchUsers']);

@@ -12,6 +12,16 @@ class Attendence extends Model
         'type',
     ];
 
+    public static function updateAttendence($data): void {
+        foreach ($data['entries'] as $entry) {
+            $attendence = self::find($entry['id']);
+            if ($attendence) {
+                $attendence->timestamp = $entry['timestamp'];
+                $attendence->save();
+            }
+        }
+    }
+
     public function user() {
         return $this->belongsTo(User::class);
     }

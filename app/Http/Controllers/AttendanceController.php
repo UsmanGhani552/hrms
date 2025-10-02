@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Attendence\UpdateAttendenceRequest;
 use App\Models\Attendence;
 use App\Services\ZKTecoService;
 use App\Traits\ResponseTrait;
@@ -24,29 +25,40 @@ class AttendanceController extends Controller
         try {
             $user = Auth::user();
             $attendences = Attendence::with('user:id,name,email,shift_id');
-            if($user->hasRole('employee')){
-                $attendences = $attendences->where('user_id',$user->id)->get();
-            }else{
+            if ($user->hasRole('employee')) {
+                $attendences = $attendences->where('user_id', $user->id)->get();
+            } else {
                 $attendences = $attendences->get();
             }
             // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2002)->orderBy('id', 'desc')->get();
-            return response()->json([
-                'message' => 'Attendance logs fetched successfully',
-                'logs' => $attendences,
-                'shifts' => DB::table('shifts')->get(),
+            
+            return ResponseTrait::success('Attendance logs fetched successfully',[
+                $attendences, 
+                DB::table('shifts')->get()
             ]);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Failed to fetch attendance logs: ' . $th->getMessage());
         }
     }
 
-    public function fetchUsers() {
+    public function update(UpdateAttendenceRequest $request)
+    {
+        try {
+            Attendence::updateAttendence($request->validated());
+            return ResponseTrait::success('Attendance updated successfully');
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Failed to fetch attendance logs: ' . $th->getMessage());
+        }
+    }
+
+    public function fetchUsers()
+    {
         try {
             $users  = $this->zkService->getUsers();
             return response()->json([
-            'message' => 'Attendance users',
-            'users' => $users,
-        ]);
+                'message' => 'Attendance users',
+                'users' => $users,
+            ]);
         } catch (\Throwable $th) {
             //throw $th;
         }
