@@ -28,6 +28,7 @@ class Attendence extends Model
                     if ($attendance) {
                         $attendance->timestamp = $entry['timestamp'];
                         $attendance->type = $entry['type'];
+                        $attendance->user_id = $entry['user_id'];
                         $attendance->save();
                         $results['updated']++;
                     } else {
@@ -36,7 +37,7 @@ class Attendence extends Model
                 } else {
                     // Create new record
                     Attendence::create([
-                        'user_id' => $entry['user_id'], // Use entry user_id, not data user_id
+                        'user_id' => $entry['user_id'],
                         'timestamp' => $entry['timestamp'],
                         'type' => $entry['type'],
                     ]);

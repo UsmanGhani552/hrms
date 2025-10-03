@@ -22,11 +22,11 @@ class UpdateAttendenceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'entries' => 'required|array',
-            'entries.*.user_id' => 'required|exists:users,id',
-            'entries.*.id' => 'required|exists:attendences,id',
-            'entries.*.timestamp' => 'required',
+            'entries' => 'required|array|min:1',
+            'entries.*.timestamp' => 'required|date_format:Y-m-d H:i:s',
             'entries.*.type' => 'required|in:check in,check out',
+            'entries.*.user_id' => 'required|exists:users,id',
+            'entries.*.id' => 'sometimes|exists:attendences,id', // Only required for updates
         ];
     }
 }
