@@ -16,8 +16,14 @@ class Attendence extends Model
         foreach ($data['entries'] as $entry) {
             $attendence = self::find($entry['id']);
             if ($attendence) {
-                $attendence->timestamp = $entry['timestamp'];
+                $attendence->timestamp = $entry['timestamp']; 
                 $attendence->save();
+            }else {
+                Attendence::create([
+                    'user_id' => $data['user_id'],
+                    'timestamp' => $data['timestamp'],
+                    'type' => $data['type'],
+                ]);
             }
         }
     }
