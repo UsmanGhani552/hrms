@@ -12,23 +12,46 @@ class Attendence extends Model
         'type',
     ];
 
-    public static function updateAttendence($data): void {
-        foreach ($data['entries'] as $entry) {
-            $attendence = self::find($entry['id']);
-            if ($attendence) {
-                $attendence->timestamp = $entry['timestamp']; 
-                $attendence->save();
-            }else {
-                Attendence::create([
-                    'user_id' => $data['user_id'],
-                    'timestamp' => $data['timestamp'],
-                    'type' => $data['type'],
-                ]);
+    public static function updateAttendence($data): array
+    {
+        $results = [
+            'updated' => 0,
+            'created' => 0,
+            'errors' => []
+        ];
+
+        foreach ($data['entries'] as $index => $entry) {
+            try {
+                if (isset($entry['id'])) {
+                    // Update existing record
+                    $attendance = self::find($entry['id']);
+                    if ($attendance) {
+                        $attendance->timestamp = $entry['timestamp'];
+                        $attendance->type = $entry['type'];
+                        $attendance->save();
+                        $results['updated']++;
+                    } else {
+                        $results['errors'][] = "Record not found for ID: {$entry['id']}";
+                    }
+                } else {
+                    // Create new record
+                    Attendence::create([
+                        'user_id' => $entry['user_id'], // Use entry user_id, not data user_id
+                        'timestamp' => $entry['timestamp'],
+                        'type' => $entry['type'],
+                    ]);
+                    $results['created']++;
+                }
+            } catch (\Exception $e) {
+                $results['errors'][] = "Error processing entry {$index}: " . $e->getMessage();
             }
         }
+
+        return $results;
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }
