@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PayrollController;
 use App\Services\ZKTecoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,11 @@ Route::middleware('auth:sanctum')->group(function () {
     //atendence routes
     Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
     Route::post('/attendence/update', [AttendanceController::class, 'update']);
+
+    Route::get('/payroll/', [PayrollController::class, 'index']);
+    Route::post('/payroll/store', [PayrollController::class, 'store']);
+    Route::post('/payroll/update/{payroll}', [PayrollController::class, 'update']);
+    Route::get('/payroll/delete/{payroll}', [PayrollController::class, 'delete']);
 });
 
 Route::get('/fetch-users', [AttendanceController::class, 'fetchUsers']);
