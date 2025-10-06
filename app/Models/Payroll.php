@@ -12,6 +12,13 @@ class Payroll extends Model
         'user_id',
         'document',
     ];
+    protected $appends = ['document_url'];
+    public function getDocumentUrlAttribute() {
+        if($this->document){
+            return asset('images/payrolls/'.$this->document);
+        }
+        return null;
+    }
 
     public static function createPayroll(array $data) {
         $data['document'] = (new self())->uploadImage(request(),'document', 'images/payrolls');
