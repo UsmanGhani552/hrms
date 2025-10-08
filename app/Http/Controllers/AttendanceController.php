@@ -28,8 +28,8 @@ class AttendanceController extends Controller
             if ($user->hasRole('employee')) {
                 $attendences = $attendences->where('user_id', $user->id)->get();
             } else {
-                // $attendences = $attendences->get();
-                $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2013)->orderBy('id', 'desc')->get();
+                $attendences = $attendences->get();
+                // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2013)->orderBy('id', 'desc')->get();
             }
             
             return ResponseTrait::success('Attendance logs fetched successfully',[
