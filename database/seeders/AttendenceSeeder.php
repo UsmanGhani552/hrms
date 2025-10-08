@@ -22,71 +22,54 @@ class AttendenceSeeder extends Seeder
      */
     public function run(): void
     {
+        $attendences = $this->zkService->getAttendance();
+        if ($attendences) {
+            foreach ($attendences as $attendence) {
+                $user = User::with('shift')->find($attendence['user_id']);
+                if (!$user || !$user->shift) continue;
 
-        $attendances = $this->zkService->getAttendance();
+                $punchDateTime = Carbon::parse($attendence['timestamp']);
+                $punchTime = $punchDateTime->format('H:i:s');
 
-        if ($attendances) {
-    foreach ($attendances as $attendance) {
-        $user = User::with('shift')->find($attendance['user_id']);
-        if (!$user || !$user->shift) continue;
+                $checkInFrom = $user->shift->check_in_from;
+                $checkInTo = $user->shift->check_in_to;
 
-        $punchDateTime = Carbon::parse($attendance['timestamp']);
-        $shiftStartTime = $user->shift->check_in_from; // e.g. 13:00:00
-        $shiftEndTime = $user->shift->check_in_to;     // e.g. 22:00:00
+                $type = 'check out'; // default fallback
 
-        // Build shift window based on *yesterday's* date first
-        $yesterday = $punchDateTime->copy()->subDay();
-        $shiftStartYesterday = Carbon::parse($yesterday->format('Y-m-d') . ' ' . $shiftStartTime);
-        $shiftEndYesterday = Carbon::parse($yesterday->format('Y-m-d') . ' ' . $shiftEndTime);
+                // 🕗 Morning Shift
+                if ($user->shift_id == 1) {
+                    if ($punchTime >= $checkInFrom && $punchTime <= $checkInTo) {
+                        $type = 'check in';
+                    } else {
+                        $type = 'check out';
+                    }
 
-        // Handle overnight shift (like 17:00 to 03:00)
-        if ($shiftEndYesterday->lessThan($shiftStartYesterday)) {
-            $shiftEndYesterday->addDay();
+                    // 🌙 Night Shift (crosses midnight)
+                } elseif ($user->shift_id == 2) {
+                    if ($punchTime >= $checkInFrom || $punchTime <= $checkInTo) {
+                        $type = 'check in';
+                    } else {
+                        $type = 'check out';
+                    }
+                }
+                // ✅ Handle after-midnight punches (belong to previous day)
+                if ($punchTime < '05:00:00') {
+                    $punchDateTime->subDay();
+                }
+                // 💾 Save or update attendance
+                Attendence::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'timestamp' => $punchDateTime->toDateTimeString(),
+                    ],
+                    [
+                        'type' => $type,
+                        'updated_at' => now(),
+                    ]
+                );
+
+                Log::info("Attendance synced: User={$user->id}, Shift={$user->shift->name}, Type={$type}, Time={$punchDateTime}");
+            }
         }
-
-        // Build today's shift window too
-        $shiftStartToday = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $shiftStartTime);
-        $shiftEndToday = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $shiftEndTime);
-        if ($shiftEndToday->lessThan($shiftStartToday)) {
-            $shiftEndToday->addDay();
-        }
-
-        // Now check where the punch fits better
-        if ($punchDateTime->between($shiftStartYesterday, $shiftEndYesterday)) {
-            $belongsTo = $shiftStartYesterday->toDateString();
-        } else {
-            $belongsTo = $shiftStartToday->toDateString();
-        }
-
-        // Determine check in/out relative to *belongsTo* window
-        $checkInFrom = Carbon::parse($belongsTo . ' ' . $shiftStartTime);
-        $checkInTo = Carbon::parse($belongsTo . ' ' . $shiftEndTime);
-        if ($checkInTo->lessThan($checkInFrom)) {
-            $checkInTo->addDay();
-        }
-
-        $type = $punchDateTime->between($checkInFrom, $checkInTo)
-            ? 'check in'
-            : 'check out';
-
-        Attendence::updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'timestamp' => $attendance['timestamp'],
-            ],
-            [
-                'type' => $type,
-                'updated_at' => now(),
-            ]
-        );
-
-        \Log::info("Attendance saved", [
-            'user' => $user->name,
-            'punch' => $punchDateTime,
-            'belongs_to' => $belongsTo,
-            'type' => $type,
-        ]);
-    }
-}
     }
 }
