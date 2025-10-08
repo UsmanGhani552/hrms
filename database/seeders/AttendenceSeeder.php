@@ -6,6 +6,7 @@ use App\Models\Attendence;
 use App\Models\User;
 use App\Services\ZKTecoService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -21,31 +22,51 @@ class AttendenceSeeder extends Seeder
      */
     public function run(): void
     {
-        $attendences = $this->zkService->getAttendance();
-        
-        if ($attendences) {
-            foreach ($attendences as $attendence) {
-                $user = User::where('id', $attendence['user_id'])->first();
-                if (!$user) {
-                    continue; // Skip if user not found
-                }
-                $punchTime = date('H:i:s', strtotime($attendence['timestamp']));
-                $checkInFrom = $user->shift->check_in_from; // "17:00:00"  // "08:00:00"
-                $checkInTo = $user->shift->check_in_to;     // "03:00:00"  // "17:00:00"
+        $attendances = $this->zkService->getAttendance();
 
-                $type = ($checkInFrom < $checkInTo)? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out'):
-                (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
-                $attendence = Attendence::updateOrCreate(
+        if ($attendances) {
+            foreach ($attendances as $attendance) {
+                $user = User::with('shift')->find($attendance['user_id']);
+                if (!$user || !$user->shift) continue;
+
+                $punchDateTime = Carbon::parse($attendance['timestamp']);
+                $checkInFrom = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $user->shift->check_in_from);
+                $checkInTo = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $user->shift->check_in_to);
+
+                // Handle overnight or next-day check-out
+                if ($checkInTo->lessThanOrEqualTo($checkInFrom)) {
+                    $checkInTo->addDay();
+                }
+
+                // If punch is after midnight but before check_in_to (like 12:12 AM for 1PM–10PM shift),
+                // and belongs to previous shift day, shift the 'checkInFrom' and 'checkInTo' back one day.
+                if ($punchDateTime->lessThan($checkInFrom) && $punchDateTime->between($checkInFrom->copy()->subDay(), $checkInTo->copy()->subDay())) {
+                    $checkInFrom->subDay();
+                    $checkInTo->subDay();
+                }
+
+                $type = $punchDateTime->between($checkInFrom, $checkInTo)
+                    ? 'check in'
+                    : 'check out';
+
+                Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,
-                        'timestamp' => $attendence['timestamp'],
+                        'timestamp' => $attendance['timestamp'],
                     ],
                     [
                         'type' => $type,
                         'updated_at' => now(),
                     ]
                 );
-                Log::info('Attendence fetched/created: ' . $attendence);
+
+                Log::info("Attendance saved", [
+                    'user_id' => $user->id,
+                    'timestamp' => $attendance['timestamp'],
+                    'type' => $type,
+                    'from' => $checkInFrom,
+                    'to' => $checkInTo,
+                ]);
             }
         }
     }
