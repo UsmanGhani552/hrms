@@ -6,7 +6,6 @@ use App\Models\Attendence;
 use App\Models\User;
 use App\Services\ZKTecoService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -23,52 +22,30 @@ class AttendenceSeeder extends Seeder
     public function run(): void
     {
         $attendences = $this->zkService->getAttendance();
+        
         if ($attendences) {
             foreach ($attendences as $attendence) {
-                $user = User::with('shift')->find($attendence['user_id']);
-                if (!$user || !$user->shift) continue;
-
-                $punchDateTime = Carbon::parse($attendence['timestamp']);
-                $punchTime = $punchDateTime->format('H:i:s');
-
-                $checkInFrom = $user->shift->check_in_from;
-                $checkInTo = $user->shift->check_in_to;
-
-                $type = 'check out'; // default fallback
-
-                // 🕗 Morning Shift
-                if ($user->shift_id == 1) {
-                    if ($punchTime >= $checkInFrom && $punchTime <= $checkInTo) {
-                        $type = 'check in';
-                    } else {
-                        $type = 'check out';
-                    }
-
-                    // 🌙 Night Shift (crosses midnight)
-                } elseif ($user->shift_id == 2) {
-                    if ($punchTime >= $checkInFrom || $punchTime <= $checkInTo) {
-                        $type = 'check in';
-                    } else {
-                        $type = 'check out';
-                    }
+                $user = User::where('id', $attendence['user_id'])->first();
+                if (!$user) {
+                    continue; // Skip if user not found
                 }
-                // ✅ Handle after-midnight punches (belong to previous day)
-                if ($punchTime < '05:00:00') {
-                    $punchDateTime->subDay();
-                }
-                // 💾 Save or update attendance
-                Attendence::updateOrCreate(
+                $punchTime = date('H:i:s', strtotime($attendence['timestamp']));
+                $checkInFrom = $user->shift->check_in_from; // "17:00:00"  // "08:00:00"
+                $checkInTo = $user->shift->check_in_to;     // "03:00:00"  // "17:00:00"
+
+                $type = ($checkInFrom < $checkInTo)? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out'):
+                (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
+                $attendence = Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,
-                        'timestamp' => $punchDateTime->toDateTimeString(),
+                        'timestamp' => $attendence['timestamp'],
                     ],
                     [
                         'type' => $type,
                         'updated_at' => now(),
                     ]
                 );
-
-                Log::info("Attendance synced: User={$user->id}, Shift={$user->shift->name}, Type={$type}, Time={$punchDateTime}");
+                Log::info('Attendence fetched/created: ' . $attendence);
             }
         }
     }
