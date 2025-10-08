@@ -9,6 +9,7 @@ class Attendence extends Model
     protected $fillable = [
         'user_id',
         'timestamp',
+        'date',
         'type',
     ];
 

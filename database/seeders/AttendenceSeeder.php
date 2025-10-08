@@ -6,7 +6,6 @@ use App\Models\Attendence;
 use App\Models\User;
 use App\Services\ZKTecoService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -23,27 +22,25 @@ class AttendenceSeeder extends Seeder
     public function run(): void
     {
         $attendences = $this->zkService->getAttendance();
-
+        
         if ($attendences) {
             foreach ($attendences as $attendence) {
                 $user = User::where('id', $attendence['user_id'])->first();
                 if (!$user) {
                     continue; // Skip if user not found
                 }
-                $punchDateTime = Carbon::parse($attendence['timestamp']);
                 $punchTime = date('H:i:s', strtotime($attendence['timestamp']));
                 $checkInFrom = $user->shift->check_in_from; // "17:00:00"  // "08:00:00"
                 $checkInTo = $user->shift->check_in_to;     // "03:00:00"  // "17:00:00"
 
-                $type = ($checkInFrom < $checkInTo) ? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out') : (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
-                // ✅ Handle after-midnight punches (belong to previous day)
-                if ($punchTime < '09:30:00') {
-                    $punchDateTime->subDay();
-                }
+                $type = ($checkInFrom < $checkInTo)? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out'):
+                (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
+                
                 $attendence = Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,
-                        'timestamp' => $punchDateTime,
+                        'date' => date('Y-m-d', strtotime($attendence['timestamp'])),
+                        'timestamp' => $attendence['timestamp'],
                     ],
                     [
                         'type' => $type,
@@ -51,6 +48,18 @@ class AttendenceSeeder extends Seeder
                     ]
                 );
                 Log::info('Attendence fetched/created: ' . $attendence);
+            }
+
+            $users = User::pluck('id')->toArray();
+            foreach ($users as $userId) {
+                $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
+
+                for ($i=0; $i < count($attendences); $i++) { 
+                    if ($attendences[$i]->type === 'check in' && isset($attendences[$i+1]) && $attendences[$i+1]->type === 'check out') {
+                        $attendences[$i+1]->date = $attendences[$i]->date;
+                        $attendences[$i+1]->save();
+                    }
+                }
             }
         }
     }

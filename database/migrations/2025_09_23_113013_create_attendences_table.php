@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users');
             $table->enum('type',['check in','check out']);
+            $table->date('date');
             $table->dateTime('timestamp');
             $table->timestamps();
         });
