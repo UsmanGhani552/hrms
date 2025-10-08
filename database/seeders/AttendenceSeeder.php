@@ -22,6 +22,7 @@ class AttendenceSeeder extends Seeder
      */
     public function run(): void
     {
+
         $attendances = $this->zkService->getAttendance();
 
         if ($attendances) {
@@ -30,21 +31,25 @@ class AttendenceSeeder extends Seeder
                 if (!$user || !$user->shift) continue;
 
                 $punchDateTime = Carbon::parse($attendance['timestamp']);
+
+                // Build today’s shift window
                 $checkInFrom = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $user->shift->check_in_from);
                 $checkInTo = Carbon::parse($punchDateTime->format('Y-m-d') . ' ' . $user->shift->check_in_to);
 
-                // Handle overnight or next-day check-out
-                if ($checkInTo->lessThanOrEqualTo($checkInFrom)) {
+                // handle overnight shifts (e.g. 17:00 -> 03:00)
+                if ($checkInTo->lessThan($checkInFrom)) {
                     $checkInTo->addDay();
                 }
 
-                // If punch is after midnight but before check_in_to (like 12:12 AM for 1PM–10PM shift),
-                // and belongs to previous shift day, shift the 'checkInFrom' and 'checkInTo' back one day.
-                if ($punchDateTime->lessThan($checkInFrom) && $punchDateTime->between($checkInFrom->copy()->subDay(), $checkInTo->copy()->subDay())) {
+                // 👇 NEW LOGIC:
+                // if someone punches after midnight (like 12:20 AM) but before their shift start (1PM),
+                // that punch belongs to the previous day
+                if ($punchDateTime->format('H:i:s') < $user->shift->check_in_from) {
                     $checkInFrom->subDay();
                     $checkInTo->subDay();
                 }
 
+                // classify
                 $type = $punchDateTime->between($checkInFrom, $checkInTo)
                     ? 'check in'
                     : 'check out';
@@ -64,8 +69,8 @@ class AttendenceSeeder extends Seeder
                     'user_id' => $user->id,
                     'timestamp' => $attendance['timestamp'],
                     'type' => $type,
-                    'from' => $checkInFrom,
-                    'to' => $checkInTo,
+                    'belongs_to' => $checkInFrom->toDateString(),
+                    'shift' => "{$user->shift->check_in_from} - {$user->shift->check_in_to}",
                 ]);
             }
         }
