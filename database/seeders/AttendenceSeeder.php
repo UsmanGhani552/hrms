@@ -80,12 +80,12 @@ class AttendenceSeeder extends Seeder
                             }
                         }
                         if (
-                            isset($attendences[$entryIndex + $nextEntryIndex])
-                            && $attendences[$entryIndex]->type === 'check in' && $attendences[$entryIndex + $nextEntryIndex]->type === 'check out'
-                            && (strtotime($attendences[$entryIndex + $nextEntryIndex]->timestamp) - strtotime($attendences[$entryIndex]->timestamp)) < 57600
+                            isset($attendences[$entryIndex]) && isset($attendences[$nextEntryIndex])
+                            && $attendences[$entryIndex]->type === 'check in' && $attendences[$nextEntryIndex]->type === 'check out'
+                            && (strtotime($attendences[$nextEntryIndex]->timestamp) - strtotime($attendences[$entryIndex]->timestamp)) < 57600
                         ) { // 16 hours
-                            $attendences[$entryIndex + $nextEntryIndex]->date = $attendences[$entryIndex]->date;
-                            $attendences[$entryIndex + $nextEntryIndex]->save();
+                            $attendences[$nextEntryIndex]->date = $attendences[$entryIndex]->date;
+                            $attendences[$nextEntryIndex]->save();
 
                             
                         }
