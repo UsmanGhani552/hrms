@@ -54,7 +54,7 @@ class AttendenceSeeder extends Seeder
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
 
                 for ($i = 0; $i < count($attendences); $i++) {
-                    if (isset($attendences[$i + 1])) {
+                    if (isset($attendences[$i]) && $attendences[$i] != null && isset($attendences[$i + 1]) && $attendences[$i + 1] != null) {
                         if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
                             if ($attendences[$i]->type === 'check in') {
                                 $attendences[$i + 1]->delete();
@@ -69,6 +69,7 @@ class AttendenceSeeder extends Seeder
                         for ($j=$nextEntryIndex; $j < count($attendences); $j++) { 
                             if ($attendences[$j] !== null) {
                                 $nextEntryIndex = $j;
+                                
                                 break;
                             }
                         }
@@ -79,7 +80,12 @@ class AttendenceSeeder extends Seeder
                         ) { // 16 hours
                             $attendences[$i + $nextEntryIndex]->date = $attendences[$i]->date;
                             $attendences[$i + $nextEntryIndex]->save();
+
+                            
                         }
+
+                        
+
                     }
                 }
             }
