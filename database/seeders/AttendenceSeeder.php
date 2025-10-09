@@ -51,27 +51,30 @@ class AttendenceSeeder extends Seeder
 
             $users = User::pluck('id')->toArray();
             foreach ($users as $userId) {
-                $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
+                $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get()->toArray();
 
                 for ($i = 0; $i < count($attendences); $i++) {
                     if (isset($attendences[$i + 1])) {
-                        if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
-                            if ($attendences[$i]->type === 'check in') {
-                                $attendences[$i + 1]->delete();
+                        if (
+                            $attendences[$i]['type'] === $attendences[$i + 1]['type'] &&
+                            abs(strtotime($attendences[$i + 1]['timestamp']) - strtotime($attendences[$i]['timestamp'])) < 3600
+                        ) {
+                            if ($attendences[$i]['type'] === 'check in') {
+                                Attendence::where('id', $attendences[$i + 1]['id'])->delete();
                                 unset($attendences[$i + 1]);
-                                $attendences = collect(array_values($attendences->toArray()));
+                                $attendences = array_values($attendences);
                             } else {
-                                $attendences[$i]->delete();
+                                Attendence::where('id', $attendences[$i]['id'])->delete();
                                 unset($attendences[$i]);
-                                $attendences = collect(array_values($attendences->toArray()));
+                                $attendences = array_values($attendences);
                             }
                         }
                         if (
-                            $attendences[$i]->type === 'check in' && $attendences[$i + 1]->type === 'check out'
-                            && (strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 57600
+                            $attendences[$i]['type'] === 'check in' && $attendences[$i + 1]['type'] === 'check out'
+                            && (strtotime($attendences[$i + 1]['timestamp']) - strtotime($attendences[$i]['timestamp'])) < 57600
                         ) { // 16 hours
-                            $attendences[$i + 1]->date = $attendences[$i]->date;
-                            $attendences[$i + 1]->save();
+                            Attendence::where('id', $attendences[$i + 1]['id'])->update(['date' => $attendences[$i]['date']]);
+                            $attendences[$i + 1]['date'] = $attendences[$i]['date'];
                         }
                     }
                 }
