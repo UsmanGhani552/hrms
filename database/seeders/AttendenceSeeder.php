@@ -59,11 +59,11 @@ class AttendenceSeeder extends Seeder
                             if ($attendences[$i]->type === 'check in') {
                                 $attendences[$i + 1]->delete();
                                 unset($attendences[$i + 1]);
-                                $attendences = array_values($attendences);
+                                $attendences = collect(array_values($attendences->toArray()));
                             } else {
                                 $attendences[$i]->delete();
                                 unset($attendences[$i]);
-                                $attendences = array_values($attendences);
+                                $attendences = collect(array_values($attendences->toArray()));
                             }
                         }
                         if (
