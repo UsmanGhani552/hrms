@@ -55,15 +55,15 @@ class AttendenceSeeder extends Seeder
 
                 for ($i = 0; $i < count($attendences); $i++) {
                     if (isset($attendences[$i]) && $attendences[$i] != null && isset($attendences[$i + 1]) && $attendences[$i + 1] != null) {
-                        // if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
-                        //     if ($attendences[$i]->type === 'check in') {
-                        //         $attendences[$i + 1]->delete();
-                        //         $attendences[$i + 1]  = null;
-                        //     } else {
-                        //         $attendences[$i]->delete();
-                        //         $attendences[$i] = null;
-                        //     }
-                        // }
+                        if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
+                            if ($attendences[$i]->type === 'check in') {
+                                $attendences[$i + 1]->delete();
+                                $attendences[$i + 1]  = null;
+                            } else {
+                                $attendences[$i]->delete();
+                                $attendences[$i] = null;
+                            }
+                        }
                         $entryIndex = $i;
                         for ($j=$entryIndex; $j < count($attendences); $j++) { 
                             if ($attendences[$j] !== null) {
