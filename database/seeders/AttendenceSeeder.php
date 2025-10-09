@@ -22,7 +22,7 @@ class AttendenceSeeder extends Seeder
     public function run(): void
     {
         $attendences = $this->zkService->getAttendance();
-        
+
         if ($attendences) {
             foreach ($attendences as $attendence) {
                 $user = User::where('id', $attendence['user_id'])->first();
@@ -33,9 +33,8 @@ class AttendenceSeeder extends Seeder
                 $checkInFrom = $user->shift->check_in_from; // "17:00:00"  // "08:00:00"
                 $checkInTo = $user->shift->check_in_to;     // "03:00:00"  // "17:00:00"
 
-                $type = ($checkInFrom < $checkInTo)? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out'):
-                (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
-                
+                $type = ($checkInFrom < $checkInTo) ? (($punchTime >= $checkInFrom && $punchTime <= $checkInTo) ? 'check in' : 'check out') : (($punchTime >= $checkInFrom || $punchTime <= $checkInTo) ? 'check in' : 'check out');
+
                 $attendence = Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,
@@ -54,11 +53,22 @@ class AttendenceSeeder extends Seeder
             foreach ($users as $userId) {
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
 
-                for ($i=0; $i < count($attendences); $i++) { 
-                    if ($attendences[$i]->type === 'check in' && isset($attendences[$i+1]) && $attendences[$i+1]->type === 'check out'
-                    && (strtotime($attendences[$i+1]->timestamp) - strtotime($attendences[$i]->timestamp) ) < 57600 ) { // 16 hours
-                        $attendences[$i+1]->date = $attendences[$i]->date;
-                        $attendences[$i+1]->save();
+                for ($i = 0; $i < count($attendences); $i++) {
+                    if (isset($attendences[$i + 1])) {
+                        if (
+                            $attendences[$i]->type === 'check in' && $attendences[$i + 1]->type === 'check out'
+                            && (strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 57600
+                        ) { // 16 hours
+                            $attendences[$i + 1]->date = $attendences[$i]->date;
+                            $attendences[$i + 1]->save();
+                        }
+                        if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
+                            if ($attendences[$i]->type === 'check in') {
+                                $attendences[$i + 1]->delete();
+                            } else {
+                                $attendences[$i]->delete();
+                            }
+                        }
                     }
                 }
             }
