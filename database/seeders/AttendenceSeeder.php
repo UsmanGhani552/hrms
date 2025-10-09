@@ -54,46 +54,39 @@ class AttendenceSeeder extends Seeder
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
 
                 for ($i = 0; $i < count($attendences); $i++) {
-                    if (isset($attendences[$i]) && $attendences[$i] != null && isset($attendences[$i + 1]) && $attendences[$i + 1] != null) {
+                    if (isset($attendences[$i + 1])) {
                         if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
                             if ($attendences[$i]->type === 'check in') {
                                 $attendences[$i + 1]->delete();
-                                $attendences[$i + 1]  = null;
+                                unset($attendences[$i + 1]);
+                                $i++;
                             } else {
                                 $attendences[$i]->delete();
-                                $attendences[$i] = null;
+                                unset($attendences[$i]);
                             }
                         }
-                        $entryIndex = $i;
-                        for ($j=$entryIndex; $j < count($attendences); $j++) { 
-                            if ($attendences[$j] !== null) {
-                                $entryIndex = $j;
-                                break;
-                            }
-                        }
-                        $nextEntryIndex = $entryIndex + 1;
-                        for ($j=$nextEntryIndex; $j < count($attendences); $j++) { 
-                            if ($attendences[$j] !== null) {
-                                $nextEntryIndex = $j;
-                                
-                                break;
-                            }
-                        }
-                        if (
-                            isset($attendences[$entryIndex]) && isset($attendences[$nextEntryIndex])
-                            && $attendences[$entryIndex]->type === 'check in' && $attendences[$nextEntryIndex]->type === 'check out'
-                            && (strtotime($attendences[$nextEntryIndex]->timestamp) - strtotime($attendences[$entryIndex]->timestamp)) < 57600
-                        ) { // 16 hours
-                            $attendences[$nextEntryIndex]->date = $attendences[$entryIndex]->date;
-                            $attendences[$nextEntryIndex]->save();
-
-                            
-                        }
-
                         
-
                     }
                 }
+                $attendencesArray = $attendences->values();
+
+                for ($i = 0; $i < count($attendencesArray); $i++) {
+                    if (isset($attendencesArray[$i + 1])) {
+                        
+                        if (
+                            $attendencesArray[$i]['type'] === 'check in' && $attendencesArray[$i + 1]['type'] === 'check out'
+                            && (strtotime($attendencesArray[$i + 1]['timestamp']) - strtotime($attendencesArray[$i]['timestamp'])) < 57600
+                        ) { // 16 hours
+                            $entry = $attendences->where('id', $attendencesArray[$i + 1]['id'])->first();
+                            // $attendences->where('id', $attendencesArray[$i + 1]['id'])->update(['date' => $attendencesArray[$i]['date']]);
+
+
+                            $entry['date'] = $attendencesArray[$i]['date'];
+                            $entry->save();
+                        }
+                    }
+                }
+                
             }
         }
     }
