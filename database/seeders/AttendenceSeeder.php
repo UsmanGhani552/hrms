@@ -55,7 +55,8 @@ class AttendenceSeeder extends Seeder
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
 
                 for ($i=0; $i < count($attendences); $i++) { 
-                    if ($attendences[$i]->type === 'check in' && isset($attendences[$i+1]) && $attendences[$i+1]->type === 'check out') {
+                    if ($attendences[$i]->type === 'check in' && isset($attendences[$i+1]) && $attendences[$i+1]->type === 'check out'
+                    && (strtotime($attendences[$i+1]->timestamp) - strtotime($attendences[$i]->timestamp) ) < 57600 ) { // 16 hours
                         $attendences[$i+1]->date = $attendences[$i]->date;
                         $attendences[$i+1]->save();
                     }
