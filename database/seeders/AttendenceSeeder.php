@@ -64,8 +64,14 @@ class AttendenceSeeder extends Seeder
                                 $attendences[$i] = null;
                             }
                         }
-
-                        $nextEntryIndex = $i + 1;
+                        $entryIndex = $i;
+                        for ($j=$entryIndex; $j < count($attendences); $j++) { 
+                            if ($attendences[$j] !== null) {
+                                $entryIndex = $j;
+                                break;
+                            }
+                        }
+                        $nextEntryIndex = $entryIndex + 1;
                         for ($j=$nextEntryIndex; $j < count($attendences); $j++) { 
                             if ($attendences[$j] !== null) {
                                 $nextEntryIndex = $j;
@@ -74,12 +80,12 @@ class AttendenceSeeder extends Seeder
                             }
                         }
                         if (
-                            isset($attendences[$i + $nextEntryIndex])
-                            && $attendences[$i]->type === 'check in' && $attendences[$i + $nextEntryIndex]->type === 'check out'
-                            && (strtotime($attendences[$i + $nextEntryIndex]->timestamp) - strtotime($attendences[$i]->timestamp)) < 57600
+                            isset($attendences[$entryIndex + $nextEntryIndex])
+                            && $attendences[$entryIndex]->type === 'check in' && $attendences[$entryIndex + $nextEntryIndex]->type === 'check out'
+                            && (strtotime($attendences[$entryIndex + $nextEntryIndex]->timestamp) - strtotime($attendences[$entryIndex]->timestamp)) < 57600
                         ) { // 16 hours
-                            $attendences[$i + $nextEntryIndex]->date = $attendences[$i]->date;
-                            $attendences[$i + $nextEntryIndex]->save();
+                            $attendences[$entryIndex + $nextEntryIndex]->date = $attendences[$entryIndex]->date;
+                            $attendences[$entryIndex + $nextEntryIndex]->save();
 
                             
                         }
