@@ -6,6 +6,7 @@ use App\Models\Attendence;
 use App\Models\User;
 use App\Services\ZKTecoService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -38,10 +39,10 @@ class AttendenceSeeder extends Seeder
                 $attendence = Attendence::updateOrCreate(
                     [
                         'user_id' => $user->id,
-                        'date' => date('Y-m-d', strtotime($attendence['timestamp'])),
                         'timestamp' => $attendence['timestamp'],
                     ],
                     [
+                        'date' => date('Y-m-d', strtotime($attendence['timestamp'])),
                         'type' => $type,
                         'updated_at' => now(),
                     ]
@@ -52,7 +53,6 @@ class AttendenceSeeder extends Seeder
             $users = User::pluck('id')->toArray();
             foreach ($users as $userId) {
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
-
                 for ($i = 0; $i < count($attendences); $i++) {
                     if (isset($attendences[$i + 1])) {
                         if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
@@ -65,14 +65,13 @@ class AttendenceSeeder extends Seeder
                                 unset($attendences[$i]);
                             }
                         }
-                        
                     }
                 }
                 $attendencesArray = $attendences->values();
 
                 for ($i = 0; $i < count($attendencesArray); $i++) {
                     if (isset($attendencesArray[$i + 1])) {
-                        
+
                         if (
                             $attendencesArray[$i]['type'] === 'check in' && $attendencesArray[$i + 1]['type'] === 'check out'
                             && (strtotime($attendencesArray[$i + 1]['timestamp']) - strtotime($attendencesArray[$i]['timestamp'])) < 57600
@@ -86,8 +85,53 @@ class AttendenceSeeder extends Seeder
                         }
                     }
                 }
-                
+                // foreach ($users as $userId) {
+                //     $this->processOffDays($userId);
+                // }
             }
+        }
+    }
+
+    public function processOffDays($userId)
+    {
+        $attendences = Attendence::where('user_id', $userId)
+            ->orderBy('timestamp', 'asc')
+            ->get();
+
+        if ($attendences->isEmpty()) {
+            return;
+        }
+
+        $startDate = Carbon::parse($attendences->first()->timestamp)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        $existingDates = $attendences->groupBy(function ($record) {
+            return Carbon::parse($record->timestamp)->format('Y-m-d');
+        });
+
+        $currentDate = $startDate->copy();
+
+        while ($currentDate <= $endDate) {
+            $dateStr = $currentDate->format('Y-m-d');
+
+            // Skip weekends (optional)
+            if ($currentDate->isWeekend()) {
+                $currentDate->addDay();
+                continue;
+            }
+
+            // Check if date exists in attendance
+            if (!isset($existingDates[$dateStr])) {
+                // This is an off day/absent day
+                Attendence::create([
+                    'user_id' => $userId,
+                    'date' => $dateStr,
+                    'timestamp' => $currentDate->copy()->setTime(9, 0),
+                    'type' => 'check in',
+                ]);
+            }
+
+            $currentDate->addDay();
         }
     }
 }
