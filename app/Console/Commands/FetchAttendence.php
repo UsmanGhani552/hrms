@@ -29,7 +29,6 @@ class FetchAttendence extends Command
     public function handle(AttendenceSeeder $attendenceSeeder)
     {
         try {
-            DB::table('attendences')->truncate(); // Optional: Clear existing records
             $attendenceSeeder->run();
             $this->info('✅ Attendance data fetched and processed successfully!');
         } catch (\Exception $e) {
