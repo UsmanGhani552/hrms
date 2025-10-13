@@ -30,6 +30,7 @@ class Attendence extends Model
                         $attendance->timestamp = $entry['timestamp'];
                         $attendance->type = $entry['type'];
                         $attendance->user_id = $entry['user_id'];
+                        $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));
                         $attendance->save();
                         $results['updated']++;
                     } else {
@@ -37,10 +38,11 @@ class Attendence extends Model
                     }
                 } else {
                     // Create new record
-                    Attendence::create([
+                    $attendance = Attendence::create([
                         'user_id' => $entry['user_id'],
                         'timestamp' => $entry['timestamp'],
                         'type' => $entry['type'],
+                        'date' => date('Y-m-d', strtotime($entry['timestamp'])),
                     ]);
                     $results['created']++;
                 }
