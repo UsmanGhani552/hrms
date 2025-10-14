@@ -28,6 +28,7 @@ class Attendence extends Model
                     $attendance = self::find($entry['id']);
                     if ($attendance) {
                         $attendance->timestamp = $entry['timestamp'];
+                        $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));
                         $attendance->type = $entry['type'];
                         $attendance->user_id = $entry['user_id'];
                         $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));

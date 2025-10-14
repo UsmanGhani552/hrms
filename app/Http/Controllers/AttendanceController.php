@@ -46,7 +46,6 @@ class AttendanceController extends Controller
         try {
             // dd($request->validated());
             Attendence::updateAttendence($request->validated());
-            
             return ResponseTrait::success('Attendance updated successfully');
         } catch (\Throwable $th) {
             return ResponseTrait::error('Failed to fetch attendance logs: ' . $th->getMessage());
