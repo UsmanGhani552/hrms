@@ -111,6 +111,7 @@ class AttendenceSeeder extends Seeder
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $type = null;
+            // Skip weekends (optional)
             if ($currentDate->isWeekend()) {
                 $type = 'weekend';
             }
@@ -120,8 +121,9 @@ class AttendenceSeeder extends Seeder
                 // This is an off day/absent day
                 Attendence::updateOrCreate([
                     'user_id' => $userId,
-                    'date' => $dateStr,
+                    'timestamp' => $currentDate->copy()->setTime(0, 0),
                 ], [
+                    'date' => $dateStr,
                     'type' => $type ?? 'absent',
                 ]);
             }
