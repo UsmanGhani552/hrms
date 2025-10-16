@@ -85,9 +85,9 @@ class AttendenceSeeder extends Seeder
                         }
                     }
                 }
-                // foreach ($users as $userId) {
-                //     $this->processOffDays($userId);
-                // }
+                foreach ($users as $userId) {
+                    $this->processOffDays($userId);
+                }
             }
         }
     }
@@ -123,10 +123,11 @@ class AttendenceSeeder extends Seeder
             // Check if date exists in attendance
             if (!isset($existingDates[$dateStr])) {
                 // This is an off day/absent day
-                Attendence::create([
+                Attendence::updateOrCreate([
                     'user_id' => $userId,
-                    'date' => $dateStr,
                     'timestamp' => $currentDate->copy()->setTime(9, 0),
+                ], [
+                    'date' => $dateStr,
                     'type' => 'check in',
                 ]);
             }
