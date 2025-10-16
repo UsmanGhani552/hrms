@@ -77,9 +77,6 @@ class AttendenceSeeder extends Seeder
                             && (strtotime($attendencesArray[$i + 1]['timestamp']) - strtotime($attendencesArray[$i]['timestamp'])) < 57600
                         ) { // 16 hours
                             $entry = $attendences->where('id', $attendencesArray[$i + 1]['id'])->first();
-                            // $attendences->where('id', $attendencesArray[$i + 1]['id'])->update(['date' => $attendencesArray[$i]['date']]);
-
-
                             $entry['date'] = $attendencesArray[$i]['date'];
                             $entry->save();
                         }
@@ -113,11 +110,10 @@ class AttendenceSeeder extends Seeder
 
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
-
+            $type = null;
             // Skip weekends (optional)
             if ($currentDate->isWeekend()) {
-                $currentDate->addDay();
-                continue;
+                $type = 'weekend';
             }
 
             // Check if date exists in attendance
@@ -128,7 +124,7 @@ class AttendenceSeeder extends Seeder
                     'timestamp' => $currentDate->copy()->setTime(9, 0),
                 ], [
                     'date' => $dateStr,
-                    'type' => 'check in',
+                    'type' => $type || 'absent',
                 ]);
             }
 

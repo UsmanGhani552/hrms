@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('attendences', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->enum('type',['check in','check out']);
+            $table->enum('type',['check in','check out','weekend','holiday','absent']);
             $table->date('date');
             $table->dateTime('timestamp');
             $table->timestamps();
