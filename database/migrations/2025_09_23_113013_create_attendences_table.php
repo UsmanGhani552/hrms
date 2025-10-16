@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->enum('type',['check in','check out','weekend','holiday','absent']);
             $table->date('date');
-            $table->dateTime('timestamp');
+            $table->dateTime('timestamp')->nullable();
             $table->timestamps();
         });
     }
