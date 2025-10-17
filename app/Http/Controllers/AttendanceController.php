@@ -24,7 +24,7 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
-            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date','asc');
+            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date','asc')->paginate(10);
             if ($user->hasRole('employee')) {
                 $attendences = $attendences->where('user_id', $user->id)->orderBy('date','asc')->get();
             } else {
