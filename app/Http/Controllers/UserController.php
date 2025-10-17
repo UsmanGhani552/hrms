@@ -8,6 +8,7 @@ use App\Models\Shift;
 use App\Models\User;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -56,6 +57,15 @@ class UserController extends Controller
             return ResponseTrait::success('Shifts fetched successfully', $shifts);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Error fetching shifts', $th);
+        }
+    }
+
+    public function roles() {
+        try {
+            $roles = Role::all();
+            return ResponseTrait::success('Roles fetched successfully', $roles);
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Error fetching roles', $th);
         }
     }
 }

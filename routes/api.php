@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/delete/{user}', 'delete')->name('delete');
     });
     Route::get('/shifts', [UserController::class, 'shifts']);
+    Route::get('/roles', [UserController::class, 'roles']);
 });
 
 Route::get('/fetch-users', [AttendanceController::class, 'fetchUsers']);
