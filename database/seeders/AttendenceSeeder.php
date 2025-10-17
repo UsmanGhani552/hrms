@@ -29,7 +29,7 @@ class AttendenceSeeder extends Seeder
             // $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
             //     return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
             // });
-            dd($attendences);
+            // dd($attendences);
             foreach ($attendences as $attendence) {
                 $user = User::where('id', $attendence['user_id'])->first();
                 if (!$user) {
