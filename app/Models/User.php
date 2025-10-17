@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -48,6 +49,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public static function createUser(array $data): User {
+        $data['password'] = Hash::make($data['password']);
+        $user = User::create($data);
+        $user->assignRole($data['role']);
+        return $user;
+    }
+    public function updateUser(array $data): User {
+        $data['password'] = Hash::make($data['password']);
+        $this->update($data);
+        $this->syncRoles($data['role']);
+        return $this;
     }
 
     public function shift() {
