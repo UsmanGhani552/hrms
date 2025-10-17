@@ -24,17 +24,16 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
-
-            $query = Attendence::with('user:id,name,email,shift_id')->orderBy('date', 'asc');
-
+            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date','asc');
             if ($user->hasRole('employee')) {
-                $query->where('user_id', $user->id);
+                $attendences = $attendences->where('user_id', $user->id)->orderBy('date','asc')->get();
+            } else {
+                $attendences = $attendences->get();
+                // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2013)->orderBy('id', 'desc')->get();
             }
-
-            $attendences = $query->paginate(10);
-
-            return ResponseTrait::success('Attendance logs fetched successfully', [
-                $attendences,
+            
+            return ResponseTrait::success('Attendance logs fetched successfully',[
+                $attendences, 
                 DB::table('shifts')->get()
             ]);
         } catch (\Throwable $th) {
