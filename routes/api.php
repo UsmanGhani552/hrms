@@ -26,17 +26,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payroll/store', [PayrollController::class, 'store']);
     Route::post('/payroll/update/{payroll}', [PayrollController::class, 'update']);
     Route::get('/payroll/delete/{payroll}', [PayrollController::class, 'delete']);
-
+    
     Route::controller(UserController::class)->middleware('role:admin|hr')->prefix('users')->name('users.')->group(function() {
         Route::get('/','index')->name('index');
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{user}', 'update')->name('update');
         Route::delete('/delete/{user}', 'delete')->name('delete');
     });
-    Route::get('/users/', [UserController::class, 'index']);
-    // Route::post('/user/store', [UserController::class, 'store']);
-    // Route::post('/user/update/{user}', [UserController::class, 'update']);
-    // Route::get('/user/delete/{user}', [UserController::class, 'delete']);
+    Route::get('/shifts', [UserController::class, 'shifts']);
 });
 
 Route::get('/fetch-users', [AttendanceController::class, 'fetchUsers']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\Shift;
 use App\Models\User;
 use App\Traits\ResponseTrait;
 use Illuminate\Http\Request;
@@ -46,6 +47,15 @@ class UserController extends Controller
             return ResponseTrait::success('User deleted successfully');
         } catch (\Throwable $th) {
             return ResponseTrait::error('Error deleting user', $th);
+        }
+    }
+
+    public function shifts() {
+        try {
+            $shifts = Shift::all();
+            return ResponseTrait::success('Shifts fetched successfully', $shifts);
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Error fetching shifts', $th);
         }
     }
 }
