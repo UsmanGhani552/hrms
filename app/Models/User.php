@@ -58,7 +58,9 @@ class User extends Authenticatable
         return $user;
     }
     public function updateUser(array $data): User {
-        $data['password'] = Hash::make($data['password']);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
         $this->update($data);
         $this->syncRoles($data['role']);
         return $this;

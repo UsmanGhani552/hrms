@@ -38,7 +38,7 @@ class UserController extends Controller
             $user->updateUser($request->validated());
             return ResponseTrait::success('User updated successfully', $user);
         } catch (\Throwable $th) {
-            return ResponseTrait::error('Error updating user', $th);
+            return ResponseTrait::error('Error updating user', $th->getMessage());
         }
     }
 
