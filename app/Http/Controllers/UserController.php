@@ -16,6 +16,11 @@ class UserController extends Controller
     {
         try {
             $users = User::with('shift')->get();
+            $users->map(function($user) {
+                $user->role = $user->getRoleNames()->first();
+                unset($user->roles);
+            });
+            
             return ResponseTrait::success('Users fetched successfully', $users);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Error fetching users', $th);
