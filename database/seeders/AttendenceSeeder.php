@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Attendence;
+use App\Models\Holiday;
 use App\Models\User;
 use App\Services\ZKTecoService;
 use Illuminate\Database\Seeder;
@@ -110,12 +111,15 @@ class AttendenceSeeder extends Seeder
         $existingDates = $attendences->groupBy(function ($record) {
             return Carbon::parse($record->timestamp)->format('Y-m-d');
         });
-
+        $publicHolidays = Holiday::pluck('date')->toArray();
         $currentDate = $startDate->copy();
 
         while ($currentDate <= $endDate) {
             $dateStr = $currentDate->format('Y-m-d');
             $type = null;
+            if (in_array($dateStr, $publicHolidays)) {
+                $type = 'holiday';
+            }
             // Skip weekends (optional)
             if ($currentDate->isWeekend()) {
                 $type = 'weekend';
