@@ -7,6 +7,7 @@ use App\Traits\ResponseTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 
 class AuthController extends Controller
 {
@@ -14,12 +15,15 @@ class AuthController extends Controller
     public function login(LoginUserRequest $request)
     {
         try {
+            // dd(Permission::pluck('name'));
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $user = Auth::user();
                 $token = $user->createToken('user_token', expiresAt: now()->addDay())->plainTextToken;
                 $role = $user->getRoleNames()->first();
+                $permissions = $user->getPermissionsViaRoles()->pluck('name');
                 $user['role'] = $role;
-                unset($user['roles']);
+                $user['permissions'] = $permissions;
+                unset($user['roles']);  
                 return response()->json([
                     'status_code' => 200,
                     'message' => 'User Login Successfully',
