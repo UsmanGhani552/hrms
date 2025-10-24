@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Leave\ApproveLeaveRequest;
 use App\Http\Requests\Leave\StoreLeaveRequest;
 use App\Http\Requests\Leave\UpdateLeaveRequest;
 use App\Models\Leave;
@@ -11,7 +12,13 @@ use Illuminate\Http\Request;
 class LeaveController extends Controller
 {
     public function index() {
-        $leaves = Leave::with('user')->get();
+        $user = auth()->user();
+        $leaves = Leave::with('user');
+        if ($user->hasRole('employee')) {
+            $leaves = $leaves->where('user_id', $user->id)->get();
+        } else {
+            $leaves = $leaves->get();
+        }
         return ResponseTrait::success('Leaves fetched successfully', $leaves);
     }
 
@@ -39,5 +46,15 @@ class LeaveController extends Controller
         } catch (\Throwable $th) {
             return ResponseTrait::error('Leave deletion failed', $th->getMessage());
         }
+    }
+
+    public function approve(ApproveLeaveRequest $request, Leave $leave) {
+        try {
+            $leave->approveLeave($request->validated());
+            return ResponseTrait::success('Leave approved successfully', $leave);
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Leave approval failed', $th->getMessage());
+        }
+        
     }
 }

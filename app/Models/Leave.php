@@ -25,6 +25,10 @@ class Leave extends Model
         return $this->update($data);
     }
 
+    public function approveLeave(array $data): bool {
+        return $this->update($data);
+    }
+
     public function user() {
         return $this->belongsTo(User::class);
     }

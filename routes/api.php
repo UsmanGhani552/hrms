@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{leave}', 'update')->name('update');
         Route::delete('/delete/{leave}', 'delete')->name('delete');
+        Route::post('/approve/{leave}', 'approve')->name('approve');
     });
     Route::get('/shifts', [UserController::class, 'shifts']);
     Route::get('/roles', [UserController::class, 'roles']);
