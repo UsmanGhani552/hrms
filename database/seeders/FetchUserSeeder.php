@@ -24,9 +24,12 @@ class FetchUserSeeder extends Seeder
     {
         $users  = $this->zkService->getUsers();
         $users = array_filter($users, function($user) {
-            return $user['role'] == 4;
+            $hrIds = [3000];
+            return $user['role'] == 4 || in_array($user['userid'], $hrIds);
         });
         foreach ($users as $user) {
+            $dbUser = User::where('id', $user['userid'])->first();
+            if ($dbUser) continue;
             $formattedName = str_replace(' ', '_', $user['name']);
             $employee = User::updateOrCreate(
                 ['id' => $user['userid']],

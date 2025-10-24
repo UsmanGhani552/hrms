@@ -26,10 +26,10 @@ class AttendenceSeeder extends Seeder
         $attendences = $this->zkService->getAttendance();
 
         if ($attendences) {
-            // $currentAttendence = Attendence::where('timestamp','!=',null)->orderBy('timestamp','desc')->first();
-            // $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
-            //     return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
-            // });
+            $currentAttendence = Attendence::where('timestamp','!=',null)->orderBy('timestamp','desc')->first();
+            $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
+                return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
+            });
             // dd($attendences);
             foreach ($attendences as $attendence) {
                 $user = User::where('id', $attendence['user_id'])->first();

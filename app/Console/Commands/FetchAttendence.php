@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Database\Seeders\AttendenceSeeder;
+use Database\Seeders\FetchUserSeeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -26,9 +27,10 @@ class FetchAttendence extends Command
     /**
      * Execute the console command.
      */
-    public function handle(AttendenceSeeder $attendenceSeeder)
+    public function handle(FetchUserSeeder $fetchUserSeeder, AttendenceSeeder $attendenceSeeder)
     {
         try {
+            $fetchUserSeeder->run();
             $attendenceSeeder->run();
             $this->info('✅ Attendance data fetched and processed successfully!');
         } catch (\Exception $e) {

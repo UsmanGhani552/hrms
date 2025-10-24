@@ -3,6 +3,7 @@
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\UserController;
 use App\Models\Holiday;
@@ -40,6 +41,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{holiday}', 'update')->name('update');
         Route::delete('/delete/{holiday}', 'delete')->name('delete');
+    });
+    Route::controller(LeaveController::class)->prefix('leaves')->name('leaves.')->group(function() {
+        Route::get('/','index')->name('index');
+        Route::post('/store', 'store')->name('store');
+        Route::post('/update/{leave}', 'update')->name('update');
+        Route::delete('/delete/{leave}', 'delete')->name('delete');
     });
     Route::get('/shifts', [UserController::class, 'shifts']);
     Route::get('/roles', [UserController::class, 'roles']);
