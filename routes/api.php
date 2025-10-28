@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
      
     //atendence routes
     Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
+    Route::get('/fetch-current-attendence', [AttendanceController::class, 'fetchCurrentAttendence']);
     Route::post('/attendence/update', [AttendanceController::class, 'update']);
 
     Route::get('/payrolls/', [PayrollController::class, 'index']);

@@ -6,6 +6,8 @@ use App\Http\Requests\Attendence\UpdateAttendenceRequest;
 use App\Models\Attendence;
 use App\Services\ZKTecoService;
 use App\Traits\ResponseTrait;
+use Database\Seeders\AttendenceSeeder;
+use Database\Seeders\FetchUserSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -63,5 +65,16 @@ class AttendanceController extends Controller
         } catch (\Throwable $th) {
             //throw $th;
         }
+    }
+
+    public function fetchCurrentAttendence(FetchUserSeeder $fetchUserSeeder, AttendenceSeeder $attendenceSeeder) {
+        try {
+            $fetchUserSeeder->run();
+            $attendenceSeeder->run();
+           return ResponseTrait::success('Attendance fetched successfully');
+        } catch (\Exception $e) {
+            return ResponseTrait::error('❌ Error fetching attendance: ' . $e->getMessage());
+        }
+        
     }
 }
