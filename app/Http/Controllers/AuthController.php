@@ -18,7 +18,7 @@ class AuthController extends Controller
             // dd(Permission::pluck('name'));
             if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
                 $user = Auth::user();
-                $token = $user->createToken('user_token', expiresAt: now()->addDay())->plainTextToken;
+                $token = $user->createToken('user_token', expiresAt: now()->addHours(1))->plainTextToken;
                 $role = $user->getRoleNames()->first();
                 $permissions = $user->getPermissionsViaRoles()->pluck('name');
                 $user['role'] = $role;

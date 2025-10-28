@@ -15,7 +15,13 @@ class PayrollController extends Controller
     use ImageUploadTrait;
     public function index() {
         try {
-            $payrolls = Payroll::with('user:id,name,email')->get();
+            $user = auth()->user();
+            $payrolls = Payroll::with('user:id,name,email');
+            if ($user->hasRole('employee')) {
+                $payrolls = $payrolls->where('user_id', $user->id)->get();
+            }else {
+                $payrolls = $payrolls->get();
+            }
             return ResponseTrait::success('Payrolls fetched successfully', $payrolls);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Error fetching payrolls', $th);
