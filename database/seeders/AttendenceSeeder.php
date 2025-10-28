@@ -104,9 +104,9 @@ class AttendenceSeeder extends Seeder
         if ($attendences->isEmpty()) {
             return;
         }
-
-        $startDate = Carbon::parse($attendences->first()->timestamp)->startOfDay();
-        $endDate = now()->endOfDay();
+        $day = Carbon::parse($attendences->first()->timestamp);
+        $startDate = $day->subDay()->startOfDay();
+        $endDate = $day->subDay()->endOfDay();
 
         $existingDates = $attendences->groupBy(function ($record) {
             return Carbon::parse($record->timestamp)->format('Y-m-d');
