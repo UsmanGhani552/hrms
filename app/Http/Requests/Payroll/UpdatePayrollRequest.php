@@ -24,6 +24,7 @@ class UpdatePayrollRequest extends FormRequest
         return [
             'user_id' => 'required|exists:users,id',
             'document' => 'file|mimes:pdf,jpg,png|max:2048', // Max 2MB
+            'date' => 'required|date',
         ];
     }
 }

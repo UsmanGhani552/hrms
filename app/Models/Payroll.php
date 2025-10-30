@@ -11,6 +11,7 @@ class Payroll extends Model
     protected $fillable = [
         'user_id',
         'document',
+        'date',
     ];
     protected $appends = ['document_url'];
     public function getDocumentUrlAttribute() {
