@@ -90,12 +90,59 @@ class AttendenceSeeder extends Seeder
                 }
                 foreach ($users as $userId) {
                     $this->processOffDays($userId);
+                    $this->processAbsentDays($userId);
                 }
             }
         }
     }
 
     public function processOffDays($userId)
+    {
+        $attendences = Attendence::where('user_id', $userId)
+            ->orderBy('timestamp', 'asc')
+            ->get();
+
+        if ($attendences->isEmpty()) {
+            return;
+        }
+
+        $startDate = Carbon::parse($attendences->first()->timestamp)->startOfDay();
+        $endDate = now()->endOfDay();
+
+        $existingDates = $attendences->groupBy(function ($record) {
+            return Carbon::parse($record->timestamp)->format('Y-m-d');
+        });
+        $publicHolidays = Holiday::pluck('date')->toArray();
+        $currentDate = $startDate->copy();
+
+        while ($currentDate <= $endDate) {
+            $dateStr = $currentDate->format('Y-m-d');
+            $type = null;
+            if (in_array($dateStr, $publicHolidays)) {
+                $type = 'holiday';
+            }
+            // Skip weekends (optional)
+            if ($currentDate->isWeekend()) {
+                $type = 'weekend';
+            }
+
+            // Check if date exists in attendance
+            if (!isset($existingDates[$dateStr]) && $type != null) {
+                // This is an off day/absent day
+                
+                Attendence::updateOrCreate([
+                    'user_id' => $userId,
+                    'timestamp' => $currentDate->copy()->setTime(0, 0),
+                ], [
+                    'date' => $dateStr,
+                    'type' => $type,
+                ]);
+            }
+
+            $currentDate->addDay();
+        }
+    }
+    public function processAbsentDays($userId)
     {
         $attendences = Attendence::where('user_id', $userId)
             ->orderBy('timestamp', 'asc')
@@ -126,7 +173,7 @@ class AttendenceSeeder extends Seeder
             }
 
             // Check if date exists in attendance
-            if (!isset($existingDates[$dateStr])) {
+            if (!isset($existingDates[$dateStr]) && $type == null) {
                 // This is an off day/absent day
                 Attendence::updateOrCreate([
                     'user_id' => $userId,
