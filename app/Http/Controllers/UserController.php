@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index()
     {
         try {
-            $users = User::with('shift')->get();
+            $users = User::with('shift','leaves')->get();
             $users->map(function($user) {
                 $user->role = $user->getRoleNames()->first();
                 unset($user->roles);

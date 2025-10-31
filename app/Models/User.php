@@ -69,4 +69,7 @@ class User extends Authenticatable
     public function shift() {
         return $this->belongsTo(Shift::class);
     }
+    public function leaves() {
+        return $this->hasMany(Leave::class,'user_id');
+    }
 }
