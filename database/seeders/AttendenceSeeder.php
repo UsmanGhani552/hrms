@@ -106,6 +106,8 @@ class AttendenceSeeder extends Seeder
             return;
         }
 
+        $lastPulledDate = $attendences->first()->timestamp;
+
         $startDate = Carbon::parse($attendences->first()->timestamp)->startOfDay();
         $endDate = now()->endOfDay();
 
@@ -141,6 +143,7 @@ class AttendenceSeeder extends Seeder
 
             $currentDate->addDay();
         }
+        return $lastPulledDate;
     }
     public function processAbsentDays($userId)
     {
@@ -151,9 +154,10 @@ class AttendenceSeeder extends Seeder
         if ($attendences->isEmpty()) {
             return;
         }
-        $day = Carbon::parse($attendences->first()->timestamp);
-        $startDate = $day->subDay()->startOfDay();
-        $endDate = $day->subDay()->endOfDay();
+        $lastPulledDate = $attendences->first()->timestamp;
+        $day = Carbon::parse($lastPulledDate);
+        $startDate = $day->subDays(2)->startOfDay();
+        $endDate = now()->subDay()->endOfDay();
 
         $existingDates = $attendences->groupBy(function ($record) {
             return Carbon::parse($record->timestamp)->format('Y-m-d');
@@ -173,7 +177,7 @@ class AttendenceSeeder extends Seeder
             }
 
             // Check if date exists in attendance
-            if (!isset($existingDates[$dateStr]) && $type == null) {
+            if (!isset($existingDates[$dateStr])) {
                 // This is an off day/absent day
                 Attendence::updateOrCreate([
                     'user_id' => $userId,
