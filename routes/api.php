@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PayrollController;
@@ -20,7 +21,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/logout', [AuthController::class, 'logout']);
-     
+    Route::get('/dashboard/user-stats', [DashboardController::class, 'userStats']);
     //atendence routes
     Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
     Route::get('/fetch-current-attendence', [AttendanceController::class, 'fetchCurrentAttendence']);

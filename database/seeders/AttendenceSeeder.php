@@ -31,6 +31,16 @@ class AttendenceSeeder extends Seeder
                 return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
             });
             // dd($attendences);
+            $users = User::pluck('id')->toArray();
+            $lastPulledDates = [];
+            foreach ($users as $userId) {
+                $lastPulledDate = Attendence::where('user_id', $userId)
+                ->orderBy('timestamp', 'desc')
+                ->first();
+
+                $lastPulledDates[$userId] = $lastPulledDate ? $lastPulledDate->timestamp : now()->subYear()->format('Y-m-d H:i:s');
+            }
+
             foreach ($attendences as $attendence) {
                 $user = User::where('id', $attendence['user_id'])->first();
                 if (!$user) {
@@ -56,7 +66,7 @@ class AttendenceSeeder extends Seeder
                 Log::info('Attendence fetched/created: ' . $attendence);
             }
 
-            $users = User::pluck('id')->toArray();
+            
             foreach ($users as $userId) {
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
                 for ($i = 0; $i < count($attendences); $i++) {
@@ -90,7 +100,7 @@ class AttendenceSeeder extends Seeder
                 }
                 foreach ($users as $userId) {
                     $this->processOffDays($userId);
-                    $this->processAbsentDays($userId);
+                    $this->processAbsentDays($userId, $lastPulledDates[$userId]);
                 }
             }
         }
@@ -112,7 +122,7 @@ class AttendenceSeeder extends Seeder
         $endDate = now()->endOfDay();
 
         $existingDates = $attendences->groupBy(function ($record) {
-            return Carbon::parse($record->timestamp)->format('Y-m-d');
+            return Carbon::parse($record->date)->format('Y-m-d');
         });
         $publicHolidays = Holiday::pluck('date')->toArray();
         $currentDate = $startDate->copy();
@@ -145,7 +155,7 @@ class AttendenceSeeder extends Seeder
         }
         return $lastPulledDate;
     }
-    public function processAbsentDays($userId)
+    public function processAbsentDays($userId,$lastPulledDate)
     {
         $attendences = Attendence::where('user_id', $userId)
             ->orderBy('timestamp', 'asc')
@@ -154,13 +164,13 @@ class AttendenceSeeder extends Seeder
         if ($attendences->isEmpty()) {
             return;
         }
-        $lastPulledDate = $attendences->first()->timestamp;
+        // $lastPulledDate = $attendences->first()->timestamp;
         $day = Carbon::parse($lastPulledDate);
         $startDate = $day->subDays(2)->startOfDay();
         $endDate = now()->subDay()->endOfDay();
 
         $existingDates = $attendences->groupBy(function ($record) {
-            return Carbon::parse($record->timestamp)->format('Y-m-d');
+            return Carbon::parse($record->date)->format('Y-m-d');
         });
         $publicHolidays = Holiday::pluck('date')->toArray();
         $currentDate = $startDate->copy();
@@ -177,7 +187,8 @@ class AttendenceSeeder extends Seeder
             }
 
             // Check if date exists in attendance
-            if (!isset($existingDates[$dateStr])) {
+            if (!isset($existingDates[$dateStr])) 
+                {
                 // This is an off day/absent day
                 Attendence::updateOrCreate([
                     'user_id' => $userId,
