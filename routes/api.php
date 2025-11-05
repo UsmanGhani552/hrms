@@ -33,13 +33,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payroll/update/{payroll}', [PayrollController::class, 'update']);
     Route::get('/payroll/delete/{payroll}', [PayrollController::class, 'delete']);
     
-    Route::controller(UserController::class)->middleware('role:admin|hr')->prefix('users')->name('users.')->group(function() {
+    Route::controller(UserController::class)->prefix('users')->name('users.')->group(function() {
         Route::get('/','index')->name('index');
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{user}', 'update')->name('update');
         Route::delete('/delete/{user}', 'delete')->name('delete');
     });
-    Route::controller(HolidayController::class)->middleware('role:admin|hr')->prefix('holidays')->name('holidays.')->group(function() {
+    Route::controller(HolidayController::class)->prefix('holidays')->name('holidays.')->group(function() {
         Route::get('/','index')->name('index');
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{holiday}', 'update')->name('update');

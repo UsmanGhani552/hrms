@@ -26,11 +26,11 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
-            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date', 'asc');
+            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date', 'desc');
             if ($user->hasRole('employee')) {
-                $attendences = $attendences->where('user_id', $user->id)->orderBy('date', 'desc')->get();
+                $attendences = $attendences->where('user_id', $user->id)->get();
             } else {
-                $attendences = $attendences->orderBy('date', 'desc')->get();
+                $attendences = $attendences->get();
                 // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2013)->orderBy('id', 'desc')->get();
             }
 
