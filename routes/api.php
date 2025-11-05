@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/user-stats', [DashboardController::class, 'userStats']);
     //atendence routes
     Route::get('/fetch-attendence', [AttendanceController::class, 'fetchAttendance']);
+    Route::get('/fetch-attendence-by-user-id', [AttendanceController::class, 'fetchAttendenceByUserId']);
     Route::get('/fetch-current-attendence', [AttendanceController::class, 'fetchCurrentAttendence']);
     Route::post('/attendence/update', [AttendanceController::class, 'update']);
 

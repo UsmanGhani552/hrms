@@ -26,16 +26,30 @@ class AttendanceController extends Controller
     {
         try {
             $user = Auth::user();
-            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date','asc');
+            $attendences = Attendence::with('user:id,name,email,shift_id')->orderBy('date', 'asc');
             if ($user->hasRole('employee')) {
-                $attendences = $attendences->where('user_id', $user->id)->orderBy('date','asc')->get();
+                $attendences = $attendences->where('user_id', $user->id)->orderBy('date', 'asc')->get();
             } else {
                 $attendences = $attendences->get();
                 // $attendences = Attendence::with('user:id,name,email')->where('timestamp', '>=', now()->subDays(15))->where('user_id',2013)->orderBy('id', 'desc')->get();
             }
-            
-            return ResponseTrait::success('Attendance logs fetched successfully',[
-                $attendences, 
+
+            return ResponseTrait::success('Attendance logs fetched successfully', [
+                $attendences,
+                DB::table('shifts')->get()
+            ]);
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Failed to fetch attendance logs: ' . $th->getMessage());
+        }
+    }
+
+    public function fetchAttendenceByUserId()
+    {
+        try {
+            $user_id = Auth::user()->id;
+            $attendences = Attendence::with('user:id,name,email,shift_id')->where('user_id', $user_id)->orderBy('date', 'asc')->get();
+            return ResponseTrait::success('Attendance logs fetched successfully', [
+                $attendences,
                 DB::table('shifts')->get()
             ]);
         } catch (\Throwable $th) {
@@ -54,27 +68,14 @@ class AttendanceController extends Controller
         }
     }
 
-    public function fetchUsers()
+    public function fetchCurrentAttendence(FetchUserSeeder $fetchUserSeeder, AttendenceSeeder $attendenceSeeder)
     {
-        try {
-            $users  = $this->zkService->getUsers();
-            return response()->json([
-                'message' => 'Attendance users',
-                'users' => $users,
-            ]);
-        } catch (\Throwable $th) {
-            //throw $th;
-        }
-    }
-
-    public function fetchCurrentAttendence(FetchUserSeeder $fetchUserSeeder, AttendenceSeeder $attendenceSeeder) {
         try {
             $fetchUserSeeder->run();
             $attendenceSeeder->run();
-           return ResponseTrait::success('Attendance fetched successfully');
+            return ResponseTrait::success('Attendance fetched successfully');
         } catch (\Exception $e) {
             return ResponseTrait::error('❌ Error fetching attendance: ' . $e->getMessage());
         }
-        
     }
 }

@@ -41,4 +41,6 @@ class DashboardController extends Controller
         return ResponseTrait::success('User Stats', $allUsersAttendence);
         // dd($allUsersAttendence);
     }
+
+    
 }
