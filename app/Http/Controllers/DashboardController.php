@@ -8,13 +8,15 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function userStats()
+    public function userStats(Request $request)
     {
-        $users = User::with(['attendences' => function ($query) {
-            $query->whereBetween('date', [
-                now()->subMonths(1)->startOfMonth()->format('Y-m-d'),
-                now()->subMonths(1)->endOfMonth()->format('Y-m-d')
-            ])
+        $months = $request->input('months', 0);
+
+        // Calculate the start and end dates based on the number of months
+        $startDate = now()->subMonths($months)->startOfMonth()->format('Y-m-d');
+        $endDate = now()->subMonths($months)->endOfMonth()->format('Y-m-d');
+        $users = User::with(['attendences' => function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('date', [$startDate, $endDate])
                 ->whereIn('type', ['check in', 'check out', 'absent'])
                 ->orderBy('date', 'asc');
         }])->get()->toArray();
@@ -41,6 +43,4 @@ class DashboardController extends Controller
         return ResponseTrait::success('User Stats', $allUsersAttendence);
         // dd($allUsersAttendence);
     }
-
-    
 }
