@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/','index')->name('index');
         Route::post('/give-rating', 'giveRating')->name('give-rating');
         Route::get('/get-rating-by-user-id', 'getRatingByUserId')->name('get-rating-by-user-id');
+        Route::get('/get-ratings', 'getRatings')->name('get-ratings')->middleware('role:admin|hr');
         // Route::post('/update/{rating}', 'update')->name('update');
         // Route::delete('/delete/{rating}', 'delete')->name('delete');
         // Route::post('/approve/{rating}', 'approve')->name('approve');

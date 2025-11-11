@@ -30,4 +30,9 @@ class RatingController extends Controller
         $ratings = Rating::where('rater_id', $userId)->with(['rater', 'ratee'])->get();
         return ResponseTrait::success('Ratings fetched successfully', $ratings);
     }
+
+    public function getRatings() {
+        $ratings = Rating::with(['rater', 'ratee'])->get();
+        return ResponseTrait::success('Ratings fetched successfully', $ratings);
+    }
 }
