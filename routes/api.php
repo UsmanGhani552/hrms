@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\RatingController;
 use App\Http\Controllers\UserController;
 use App\Models\Holiday;
 use App\Services\ZKTecoService;
@@ -51,6 +52,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update/{leave}', 'update')->name('update');
         Route::delete('/delete/{leave}', 'delete')->name('delete');
         Route::post('/approve/{leave}', 'approve')->name('approve');
+    });
+    Route::controller(RatingController::class)->prefix('ratings')->name('ratings.')->group(function() {
+        Route::get('/','index')->name('index');
+        Route::post('/give-rating', 'giveRating')->name('give-rating');
+        Route::get('/get-rating-by-user-id', 'getRatingByUserId')->name('get-rating-by-user-id');
+        // Route::post('/update/{rating}', 'update')->name('update');
+        // Route::delete('/delete/{rating}', 'delete')->name('delete');
+        // Route::post('/approve/{rating}', 'approve')->name('approve');
     });
     Route::get('/shifts', [UserController::class, 'shifts']);
     Route::get('/roles', [UserController::class, 'roles']);
