@@ -66,8 +66,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(SettingController::class)->middleware('role:admin|hr')->prefix('settings')->name('settings.')->group(function() {
         Route::get('/','index')->name('index');
         Route::post('/update', 'update')->name('update');
-        Route::get('/get-setting', 'getSettings')->name('get-setting');
     });
+    Route::get('settings/get-setting', [SettingController::class,'getSettings'])->name('get-setting');
     Route::get('/shifts', [UserController::class, 'shifts']);
     Route::get('/roles', [UserController::class, 'roles']);
 });
