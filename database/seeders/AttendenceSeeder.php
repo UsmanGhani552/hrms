@@ -26,7 +26,7 @@ class AttendenceSeeder extends Seeder
         $attendences = $this->zkService->getAttendance();
 
         if ($attendences) {
-            $currentAttendence = Attendence::where('timestamp','!=',null)->orderBy('timestamp','desc')->first();
+            $currentAttendence = Attendence::where('timestamp', '!=', null)->orderBy('timestamp', 'desc')->first();
             $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
                 return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
             });
@@ -35,8 +35,8 @@ class AttendenceSeeder extends Seeder
             $lastPulledDates = [];
             foreach ($users as $userId) {
                 $lastPulledDate = Attendence::where('user_id', $userId)
-                ->orderBy('timestamp', 'desc')
-                ->first();
+                    ->orderBy('timestamp', 'desc')
+                    ->first();
 
                 $lastPulledDates[$userId] = $lastPulledDate ? $lastPulledDate->timestamp : now()->subYear()->format('Y-m-d H:i:s');
             }
@@ -66,12 +66,18 @@ class AttendenceSeeder extends Seeder
                 Log::info('Attendence fetched/created: ' . $attendence);
             }
 
-            
+
             foreach ($users as $userId) {
                 $attendences = Attendence::where('user_id', $userId)->orderBy('timestamp', 'asc')->get();
                 for ($i = 0; $i < count($attendences); $i++) {
                     if (isset($attendences[$i + 1])) {
-                        if ($attendences[$i]->type === $attendences[$i + 1]->type && abs(strtotime($attendences[$i + 1]->timestamp) - strtotime($attendences[$i]->timestamp)) < 3600) {
+                        $time1 = strtotime($attendences[$i]->timestamp);
+                        $time2 = strtotime($attendences[$i + 1]->timestamp);
+                        if (
+                            $attendences[$i]->type === $attendences[$i + 1]->type
+                            && abs($time2 - $time1) < 3600
+                            && $time2 > $time1 // ensure correct order
+                        ) {
                             if ($attendences[$i]->type === 'check in') {
                                 $attendences[$i + 1]->delete();
                                 unset($attendences[$i + 1]);
@@ -141,7 +147,7 @@ class AttendenceSeeder extends Seeder
             // Check if date exists in attendance
             if (!isset($existingDates[$dateStr]) && $type != null) {
                 // This is an off day/absent day
-                
+
                 Attendence::updateOrCreate([
                     'user_id' => $userId,
                     'timestamp' => $currentDate->copy()->setTime(0, 0),
@@ -155,7 +161,7 @@ class AttendenceSeeder extends Seeder
         }
         return $lastPulledDate;
     }
-    public function processAbsentDays($userId,$lastPulledDate)
+    public function processAbsentDays($userId, $lastPulledDate)
     {
         $attendences = Attendence::where('user_id', $userId)
             ->orderBy('timestamp', 'asc')
@@ -187,8 +193,7 @@ class AttendenceSeeder extends Seeder
             }
 
             // Check if date exists in attendance
-            if (!isset($existingDates[$dateStr])) 
-                {
+            if (!isset($existingDates[$dateStr])) {
                 // This is an off day/absent day
                 Attendence::updateOrCreate([
                     'user_id' => $userId,

@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Exception;
+use Illuminate\Container\Attributes\Log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class Attendence extends Model
 {
@@ -14,6 +17,15 @@ class Attendence extends Model
         'date',
         'type',
     ];
+
+    // public function delete()
+    // {
+    //     // Your custom logic
+    //     throw new Exception("Attendance deleted for user: {$this->user_id}");
+
+    //     // Call parent delete (VERY IMPORTANT)
+    //     return parent::delete();
+    // }
 
     public static function updateAttendence($data): array
     {
@@ -25,6 +37,7 @@ class Attendence extends Model
 
         foreach ($data['entries'] as $index => $entry) {
             try {
+                FacadesLog::info('Processing entry: ', $entry);
                 if (isset($entry['id'])) {
                     // Update existing record
                     $attendance = self::find($entry['id']);
@@ -33,7 +46,6 @@ class Attendence extends Model
                         $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));
                         $attendance->type = $entry['type'];
                         $attendance->user_id = $entry['user_id'];
-                        $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));
                         $attendance->save();
                         $results['updated']++;
                     } else {
