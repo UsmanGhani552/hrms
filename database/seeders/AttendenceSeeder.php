@@ -6,6 +6,7 @@ use App\Models\Attendence;
 use App\Models\Holiday;
 use App\Models\User;
 use App\Services\ZKTecoService;
+use DateTime;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -72,9 +73,12 @@ class AttendenceSeeder extends Seeder
                 for ($i = 0; $i < count($attendences); $i++) {
                     if (isset($attendences[$i + 1])) {
                         $time1 = strtotime($attendences[$i]->timestamp);
+                        $date1 = new DateTime($attendences[$i]->timestamp);
                         $time2 = strtotime($attendences[$i + 1]->timestamp);
+                        $date2 = new DateTime($attendences[$i + 1]->timestamp);
                         if (
-                            $attendences[$i]->type === $attendences[$i + 1]->type
+                            $date1 === $date2
+                            && $attendences[$i]->type === $attendences[$i + 1]->type
                             && abs($time2 - $time1) < 3600
                             && $time2 > $time1 // ensure correct order
                         ) {
