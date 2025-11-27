@@ -34,16 +34,23 @@ class Attendence extends Model
             'created' => 0,
             'errors' => []
         ];
-
+        $checkInEntryArray = Arr::where($data['entries'], function ($entry) {
+            return $entry['type'] == 'check in';
+        });
+        $checkInEntry = null;
+        if (count($checkInEntryArray) > 0) {
+            $checkInEntry = ($checkInEntryArray[0]);
+        }
         foreach ($data['entries'] as $index => $entry) {
             try {
                 FacadesLog::info('Processing entry: ', $entry);
+                $date = date('Y-m-d', strtotime($checkInEntry !== null ? $checkInEntry['timestamp'] : $entry['timestamp']));
                 if (isset($entry['id'])) {
                     // Update existing record
                     $attendance = self::find($entry['id']);
                     if ($attendance) {
                         $attendance->timestamp = $entry['timestamp'];
-                        $attendance->date = date('Y-m-d', strtotime($entry['timestamp']));
+                        $attendance->date = $date;
                         $attendance->type = $entry['type'];
                         $attendance->user_id = $entry['user_id'];
                         $attendance->save();
@@ -57,7 +64,7 @@ class Attendence extends Model
                         'user_id' => $entry['user_id'],
                         'timestamp' => $entry['timestamp'],
                         'type' => $entry['type'],
-                        'date' => date('Y-m-d', strtotime($entry['timestamp'])),
+                        'date' => $date,
                     ]);
                     $results['created']++;
                 }
