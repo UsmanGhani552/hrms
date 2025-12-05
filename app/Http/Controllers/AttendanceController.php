@@ -78,4 +78,17 @@ class AttendanceController extends Controller
             return ResponseTrait::error('❌ Error fetching attendance: ' . $e->getMessage());
         }
     }
+
+    public function deleteAttendence($id) {
+        try {
+            $deleted = Attendence::deleteAttendence($id);
+            if ($deleted) {
+                return ResponseTrait::success('Attendance deleted successfully');
+            } else {
+                return ResponseTrait::error('Attendance not found');
+            }
+        } catch (\Exception $e) {
+            return ResponseTrait::error('Failed to delete attendance: ' . $e->getMessage());
+        }
+    }
 }

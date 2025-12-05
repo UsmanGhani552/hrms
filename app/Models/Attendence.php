@@ -18,14 +18,14 @@ class Attendence extends Model
         'type',
     ];
 
-    public function delete()
-    {
-        // Your custom logic
-        throw new Exception("Attendance deleted for user: {$this->user_id}");
+    // public function delete()
+    // {
+    //     // Your custom logic
+    //     throw new Exception("Attendance deleted for user: {$this->user_id}");
 
-        // Call parent delete (VERY IMPORTANT)
-        return parent::delete();
-    }
+    //     // Call parent delete (VERY IMPORTANT)
+    //     return parent::delete();
+    // }
 
     public static function updateAttendence($data): array
     {
@@ -74,6 +74,15 @@ class Attendence extends Model
         }
 
         return $results;
+    }
+
+    public static function deleteAttendence($id){
+        $attendence = Attendence::find($id);
+        if($attendence){
+            $attendence->delete();
+            return true;
+        }
+        return false;
     }
 
     public function user()

@@ -29,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/fetch-attendence-by-user-id', [AttendanceController::class, 'fetchAttendenceByUserId']);
     Route::get('/fetch-current-attendence', [AttendanceController::class, 'fetchCurrentAttendence']);
     Route::post('/attendence/update', [AttendanceController::class, 'update']);
+    Route::post('/attendence/delete/{id}', [AttendanceController::class, 'deleteAttendence']);
 
     Route::get('/payrolls/', [PayrollController::class, 'index']);
     Route::post('/payroll/store', [PayrollController::class, 'store']);
