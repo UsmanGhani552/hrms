@@ -31,6 +31,7 @@ class SettingController extends Controller
     public function getSettings() {
         $leaves = getSetting('leaves');
         $ratings = getSetting('ratings');
-        return ResponseTrait::success('Settings fetched successfully', compact('leaves', 'ratings'));
+        $privacy_policy = asset('images/privacy_policies/'.getSetting('privacy_policy') );
+        return ResponseTrait::success('Settings fetched successfully', compact('leaves', 'ratings', 'privacy_policy'));
     }
 }
