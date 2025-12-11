@@ -66,6 +66,14 @@ class User extends Authenticatable
         return $this;
     }
 
+    public function updateProfile(array $data): User {
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+        $this->update($data);
+        return $this;
+    }
+
     public function shift() {
         return $this->belongsTo(Shift::class);
     }

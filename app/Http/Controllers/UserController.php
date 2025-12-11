@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateProfileRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\Shift;
 use App\Models\User;
@@ -71,6 +72,17 @@ class UserController extends Controller
             return ResponseTrait::success('Roles fetched successfully', $roles);
         } catch (\Throwable $th) {
             return ResponseTrait::error('Error fetching roles', $th);
+        }
+    }
+
+    public function updateprofile(UpdateProfileRequest $request) {
+        try {
+            // dd($request->validated());
+            $user = auth()->user();
+            $user->updateProfile($request->validated());
+            return ResponseTrait::success('Profile updated successfully', $user);
+        } catch (\Throwable $th) {
+            return ResponseTrait::error('Error updating profile', $th);
         }
     }
 }

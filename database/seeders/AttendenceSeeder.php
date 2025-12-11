@@ -31,6 +31,9 @@ class AttendenceSeeder extends Seeder
             $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
                 return !$currentAttendence || strtotime($attendence['timestamp']) > strtotime($currentAttendence->timestamp);
             });
+            // $attendences = array_filter($attendences, function ($attendence) {
+            //     return strtotime($attendence['timestamp']) >= strtotime('2025-12-04 00:00:00') && strtotime($attendence['timestamp']) <= strtotime('2025-12-06 23:59:59') && $attendence['user_id'] == 3042;
+            // });
             // dd($attendences);
             $users = User::pluck('id')->toArray();
             $lastPulledDates = [];

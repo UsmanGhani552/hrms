@@ -40,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/','index')->name('index');
         Route::post('/store', 'store')->name('store');
         Route::post('/update/{user}', 'update')->name('update');
+        Route::post('/update-profile', 'updateprofile')->name('update-profile');
         Route::delete('/delete/{user}', 'delete')->name('delete');
     });
     Route::controller(HolidayController::class)->prefix('holidays')->name('holidays.')->group(function() {
