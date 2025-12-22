@@ -67,8 +67,8 @@ class AttendenceSeeder extends Seeder
                         'updated_at' => now(),
                     ]
                 );
-                Log::info('Attendence fetched/created: ' . $attendence);
             }
+            
 
 
             foreach ($users as $userId) {
@@ -115,6 +115,7 @@ class AttendenceSeeder extends Seeder
                     $this->processOffDays($userId);
                     $this->processAbsentDays($userId, $lastPulledDates[$userId]);
                 }
+                Log::info('Attendence fetched/created:');
             }
         }
     }
