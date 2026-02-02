@@ -25,7 +25,7 @@ class AttendenceSeeder extends Seeder
     public function run(): void
     {
         $attendences = $this->zkService->getAttendance();
-        return ;
+
         if ($attendences) {
             $currentAttendence = Attendence::where('timestamp', '!=', null)->orderBy('timestamp', 'desc')->first();
             $attendences = array_filter($attendences, function ($attendence) use ($currentAttendence) {
